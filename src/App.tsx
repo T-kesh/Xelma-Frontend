@@ -8,11 +8,19 @@ import Leaderboard from "./components/Leaderboard";
 import RouteProgressBar from "./components/RouteProgressBar";
 import { Toaster } from "sonner";
 import Dashboard from "./pages/Dashboard";
+import Landing from "./pages/Landing";
 import LearnPage from "./pages/Learn";
 import Connect from "./pages/Connect";
+import { useWalletStore } from "./store/useWalletStore";
 
 function App() {
   const [showNewsRibbon, setShowNewsRibbon] = useState(true);
+  const isWalletConnected = useWalletStore((s) => s.publicKey !== null && s.publicKey !== "");
+  const contentPadding = isWalletConnected
+    ? showNewsRibbon
+      ? "pt-32 lg:pt-44"
+      : "pt-24 lg:pt-32"
+    : "pt-0";
 
   return (
     <ThemeProvider>
@@ -23,14 +31,17 @@ function App() {
       )}
       <main
         id="main-content"
-        className={`px-4 lg:px-14 min-h-screen bg-[#FAFAFA] dark:bg-gray-900 transition-[padding] ${showNewsRibbon ? "pt-32 lg:pt-44" : "pt-24 lg:pt-32"
-          }`}
+        className={`px-4 lg:px-14 min-h-screen bg-[#FAFAFA] dark:bg-gray-900 transition-[padding] ${contentPadding}`}
       >
         <Routes>
           <Route
             path="/"
             element={
-              <Dashboard showNewsRibbon={showNewsRibbon} />
+              isWalletConnected ? (
+                <Dashboard showNewsRibbon={showNewsRibbon} />
+              ) : (
+                <Landing showNewsRibbon={showNewsRibbon} />
+              )
             }
           />
           <Route path="/leaderboard" element={<Leaderboard />} />
