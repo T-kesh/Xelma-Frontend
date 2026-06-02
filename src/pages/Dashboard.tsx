@@ -2,7 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import { ChatSidebar } from "../components/ChatSidebar";
 import PriceChart from "../components/PriceChart";
 import PredictionCard from "../components/PredictionCard";
+import EndRoundModal from "../components/EndRoundModal";
 import type { PredictionData } from "../components/PredictionControls";
+import type { Round } from "../lib/api-client";
 import { useRoundStore } from "../store/useRoundStore";
 import PredictionHistory from "../components/PredictionHistory";
 import { useWalletStore, selectIsWalletConnected } from "../store/useWalletStore";
@@ -24,6 +26,8 @@ const Dashboard = ({ showNewsRibbon = true }: DashboardProps) => {
     (s) => s.status === "connecting" || s.status === "checking"
   );
   const publicKey = useWalletStore((s) => s.publicKey);
+  const resolvedRound = useRoundStore((state) => state.resolvedRound);
+  const dismissResolvedRound = useRoundStore((state) => state.dismissResolvedRound);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -48,6 +52,40 @@ const Dashboard = ({ showNewsRibbon = true }: DashboardProps) => {
       }
     };
   }, []);
+
+  const getEndRoundResult = (round: Round | null) => {
+    const defaultTip = 'Stay tuned for the next round.';
+
+    if (!round) {
+      return {
+        isWin: false,
+        amount: 0,
+        tip: defaultTip,
+      };
+    }
+
+    const isWin = typeof round.isWin === 'boolean'
+      ? round.isWin
+      : String(round.outcome ?? round.result ?? '').toLowerCase() === 'win';
+
+    const amount = typeof round.netChange === 'number'
+      ? round.netChange
+      : typeof round.profit === 'number'
+      ? round.profit
+      : typeof round.score === 'number'
+      ? round.score
+      : 0;
+
+    const tip = typeof round.tip === 'string'
+      ? round.tip
+      : typeof round.note === 'string'
+      ? round.note
+      : defaultTip;
+
+    return { isWin, amount, tip };
+  };
+
+  const endRoundResult = getEndRoundResult(resolvedRound);
 
   const handlePrediction = async (data: PredictionData) => {
     setIsSubmitting(true);
@@ -143,6 +181,11 @@ const Dashboard = ({ showNewsRibbon = true }: DashboardProps) => {
           </div>
         </div>
       </div>
+      <EndRoundModal
+        isOpen={Boolean(resolvedRound)}
+        onClose={dismissResolvedRound}
+        result={endRoundResult}
+      />
     </div>
   );
 };

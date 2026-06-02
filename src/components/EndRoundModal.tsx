@@ -4,15 +4,19 @@ import { useEffect, useRef } from 'react';
 interface EndRoundModalProps {
   isOpen: boolean;
   onClose: () => void;
-  result: {
-    isWin: boolean;
-    amount: number;
-    tip: string;
+  result?: {
+    isWin?: boolean;
+    amount?: number;
+    tip?: string;
   };
 }
 
 export default function EndRoundModal({ isOpen, onClose, result }: EndRoundModalProps) {
-  const { isWin, amount, tip } = result;
+  const {
+    isWin = false,
+    amount = 0,
+    tip = 'Stay tuned for the next round.',
+  } = result ?? {};
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
