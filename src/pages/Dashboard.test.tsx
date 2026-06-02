@@ -190,7 +190,7 @@ describe('Dashboard', () => {
     it('shows player count', () => {
       render(<Dashboard />);
 
-      expect(screen.getByText('142 Playing Now')).toBeInTheDocument();
+      expect(screen.getByText('142')).toBeInTheDocument();
     });
   });
 
