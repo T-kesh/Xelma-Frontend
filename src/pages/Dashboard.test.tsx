@@ -9,8 +9,10 @@ function selectFromStore<TStore extends object>(selector: unknown, store: TStore
 // Create proper store mocks
 const mockRoundStore = {
   isRoundActive: true,
+  resolvedRound: null,
   fetchActiveRound: vi.fn(),
   subscribeToRoundEvents: vi.fn(() => vi.fn()), // Returns unsubscribe function
+  dismissResolvedRound: vi.fn(),
 };
 
 const mockWalletStore = {
@@ -152,10 +154,6 @@ vi.mock('../components/PredictionHistory', () => ({
   ),
 }));
 
-vi.mock('../components/LiveGameStatsPanel', () => ({
-  default: () => <section data-testid="live-game-stats-panel">Live Game Stats</section>,
-}));
-
 import { useRoundStore } from '../store/useRoundStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { predictionsApi, ApiError } from '../lib/api-client';
@@ -168,10 +166,10 @@ describe('Dashboard', () => {
     // Reset store mocks to default state
     Object.assign(mockRoundStore, {
       isRoundActive: true,
+      resolvedRound: null,
       fetchActiveRound: vi.fn(),
       subscribeToRoundEvents: vi.fn(() => vi.fn()),
-    });
-    
+      dismissResolvedRound: vi.fn(),
     Object.assign(mockWalletStore, {
       status: 'connected',
       publicKey: 'GTEST123',
@@ -281,15 +279,62 @@ describe('Dashboard', () => {
 
   describe('round states', () => {
     it('handles inactive round', () => {
-      vi.mocked(useRoundStore).mockImplementation(((selector: unknown) => {
+      vi.mocked(useRoundStore).mockImplementation((selector: any) => {
         const store = { ...mockRoundStore, isRoundActive: false };
-        return selectFromStore(selector, store);
-      }) as never);
+        return typeof selector === 'function' ? selector(store) : store;
+      });
 
       render(<Dashboard />);
 
       const predictionCard = screen.getByTestId('prediction-card');
       expect(predictionCard).toHaveAttribute('data-round-active', 'false');
+    });
+
+    it('opens the end round modal when a resolved round exists', () => {
+      const resolvedRound = {
+        id: 'round-123',
+        status: 'resolved',
+        isWin: true,
+        netChange: 42,
+        tip: 'Nice finish!',
+      };
+
+      vi.mocked(useRoundStore).mockImplementation((selector: any) => {
+        const store = { ...mockRoundStore, isRoundActive: false, resolvedRound };
+        return typeof selector === 'function' ? selector(store) : store;
+      });
+
+      render(<Dashboard />);
+
+      const modal = screen.getByTestId('end-round-modal');
+      expect(modal).toHaveAttribute('data-open', 'true');
+      expect(modal).toHaveAttribute('data-is-win', 'true');
+      expect(modal).toHaveAttribute('data-amount', '42');
+      expect(modal).toHaveAttribute('data-tip', 'Nice finish!');
+    });
+
+    it('dispatches dismissResolvedRound when the modal close action triggers', () => {
+      const resolvedRound = {
+        id: 'round-123',
+        status: 'resolved',
+        isWin: false,
+        netChange: -18,
+        tip: 'Better luck next round.',
+      };
+
+      const dismissResolvedRound = vi.fn();
+
+      vi.mocked(useRoundStore).mockImplementation((selector: any) => {
+        const store = { ...mockRoundStore, isRoundActive: false, resolvedRound, dismissResolvedRound };
+        return typeof selector === 'function' ? selector(store) : store;
+      });
+
+      render(<Dashboard />);
+
+      const modal = screen.getByTestId('end-round-modal');
+      fireEvent.click(modal);
+
+      expect(dismissResolvedRound).toHaveBeenCalledTimes(1);
     });
   });
 
