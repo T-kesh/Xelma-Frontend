@@ -34,7 +34,9 @@ class ConnectionStatusStore {
 
   subscribe(listener: (state: ConnectionState) => void) {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 }
 
@@ -46,7 +48,7 @@ export const socket: Socket = io(SOCKET_URL, {
   reconnection: true,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  maxReconnectionAttempts: 5,
+  reconnectionAttempts: 5,
   timeout: 20000,
   auth: (cb: (data: { token: string | null }) => void) => {
     const { jwt } = useAuthStore.getState();

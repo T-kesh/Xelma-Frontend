@@ -245,7 +245,7 @@ export const useRoundStore = create<RoundStore>((set, get) => ({
       stream.onmessage = handleGenericMessage;
 
       stream.onopen = () => {
-        set((state) => ({
+        set(() => ({
           sseConnection: {
             status: 'connected',
             error: null,

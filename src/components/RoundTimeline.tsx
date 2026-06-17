@@ -1,4 +1,4 @@
-import React from 'react';
+import { Fragment } from 'react';
 import { useRoundStore } from '../store/useRoundStore';
 
 interface TimelineState {
@@ -90,6 +90,8 @@ const RoundTimeline: React.FC = () => {
 
   const isLoading = currentState === 'loading';
   const isDisconnected = currentState === 'disconnected';
+  const isCurrentLive = currentState === 'live';
+  const isCurrentAdvanced = currentState === 'resolving' || currentState === 'finished';
 
   return (
     <div className="w-full bg-white dark:bg-gray-800 p-4 lg:p-6 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700">
@@ -153,7 +155,7 @@ const RoundTimeline: React.FC = () => {
           const isUpcoming = currentIndex < index;
 
           return (
-            <React.Fragment key={state.key}>
+            <Fragment key={state.key}>
               {/* State Node */}
               <div className="flex flex-col items-center flex-1">
                 {/* Circle Indicator */}
@@ -215,7 +217,7 @@ const RoundTimeline: React.FC = () => {
                   `}
                 />
               )}
-            </React.Fragment>
+            </Fragment>
           );
         })}
       </div>
@@ -228,9 +230,9 @@ const RoundTimeline: React.FC = () => {
             className={`
               px-3 py-1 rounded-full font-semibold text-white text-xs lg:text-sm
               ${
-                isActive
+                isCurrentLive
                   ? 'bg-blue-500'
-                  : currentIndex > 0 && !isUpcoming
+                  : isCurrentAdvanced
                     ? 'bg-green-500'
                     : 'bg-gray-500'
               }
