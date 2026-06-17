@@ -261,7 +261,7 @@ const PriceChart = ({ height = 300 }: PriceChartProps) => {
     };
   }, []); // Empty dependency array ensures this runs only once
 
-  const { isConnected, isDisconnected } = useConnectionStatus();
+  const { isConnected } = useConnectionStatus();
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -282,8 +282,8 @@ const PriceChart = ({ height = 300 }: PriceChartProps) => {
           </div>
         </div>
         
-        {/* Connection status for disconnected state */}
-        {isDisconnected && (
+        {/* Connection status when live updates are unavailable */}
+        {!isConnected && (
           <ConnectionStatus className="mr-4" />
         )}
         <p className={`text-sm font-semibold tabular-nums ${isPositive ? "text-green-500" : "text-red-500"}`}>

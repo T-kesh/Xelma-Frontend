@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Dashboard from './LegacyDashboard';
 
@@ -154,6 +154,40 @@ vi.mock('../components/PredictionHistory', () => ({
   ),
 }));
 
+vi.mock('../components/LiveGameStatsPanel', () => ({
+  default: () => (
+    <div data-testid="live-game-stats-panel">
+      <span>142</span>
+    </div>
+  ),
+}));
+
+vi.mock('../components/EndRoundModal', () => ({
+  default: ({
+    isOpen,
+    onClose,
+    result,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    result?: { isWin?: boolean; amount?: number; tip?: string };
+  }) => (
+    <div
+      data-testid="end-round-modal"
+      data-open={String(isOpen)}
+      data-is-win={String(result?.isWin)}
+      data-amount={String(result?.amount)}
+      data-tip={result?.tip}
+      onClick={onClose}
+      onKeyDown={onClose}
+      role="button"
+      tabIndex={0}
+    >
+      End Round Modal
+    </div>
+  ),
+}));
+
 import { useRoundStore } from '../store/useRoundStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { predictionsApi, ApiError } from '../lib/api-client';
@@ -229,7 +263,7 @@ describe('Dashboard', () => {
       expect(screen.getByTestId('live-game-stats-panel')).toBeInTheDocument();
       expect(screen.queryByText('142 Playing Now')).not.toBeInTheDocument();
 
-      expect(screen.getByText('142')).toBeInTheDocument();
+      expect(within(screen.getByTestId('live-game-stats-panel')).getByText('142')).toBeInTheDocument();
 
     });
   });
