@@ -20,6 +20,7 @@ const navLinks: NavLinkItem[] = [
   { label: 'Terminal', to: '/dashboard' },
   { label: 'Leaderboard', to: '/leaderboard', disabled: true, tooltip: 'Coming Soon' },
   { label: 'Learn', to: '/learn' },
+  { label: 'Profile', to: '/profile' },
 ];
 
 function truncateAddress(key: string): string {

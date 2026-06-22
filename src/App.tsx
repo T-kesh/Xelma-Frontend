@@ -7,6 +7,7 @@ import LegacyDashboard from './pages/LegacyDashboard';
 import Leaderboard from './components/Leaderboard';
 import LearnPage from './pages/Learn';
 import Connect from './pages/Connect';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -35,14 +36,7 @@ function App() {
             </div>
           }
         />
-        <Route
-          path="/profile"
-          element={
-            <div className="xelma-grid-bg px-4 py-20 text-center text-xl font-bold text-gray-500">
-              Profile — Coming Soon
-            </div>
-          }
-        />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
       <Toaster richColors position="top-center" theme="dark" />
     </div>
