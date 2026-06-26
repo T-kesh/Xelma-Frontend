@@ -18,7 +18,7 @@ interface NavLinkItem {
 
 const navLinks: NavLinkItem[] = [
   { label: 'Terminal', to: '/dashboard' },
-  { label: 'Leaderboard', to: '/leaderboard', disabled: true, tooltip: 'Coming Soon' },
+  { label: 'Leaderboard', to: '/leaderboard' },
   { label: 'Learn', to: '/learn' },
 ];
 
