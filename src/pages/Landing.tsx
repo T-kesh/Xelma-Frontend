@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HowItWorks from '../components/HowItWorks';
 import ModeCards from '../components/ModeCards';
+import Footer from '../components/Footer';
 import { mockLandingStats } from '../data/mockData';
 
 function useCountUp(target: number, durationMs = 1800) {
@@ -105,28 +106,7 @@ export default function Landing() {
         <HowItWorks />
       </div>
       <ModeCards />
-
-      <footer className="border-t border-white/10 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="text-center sm:text-left">
-            <p className="text-lg font-bold text-white">Xelma</p>
-            <p className="mt-1 text-sm text-gray-500">
-              Collective market intelligence on Stellar
-            </p>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-gray-500">
-            <span>MIT License</span>
-            <a
-              href="https://github.com/TevaLabs/Xelma-Frontend"
-              target="_blank"
-              rel="noreferrer"
-              className="text-cyan-400 hover:text-cyan-300"
-            >
-              GitHub
-            </a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
