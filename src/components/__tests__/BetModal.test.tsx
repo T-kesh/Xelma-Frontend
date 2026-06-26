@@ -171,4 +171,168 @@ describe('BetModal Component', () => {
     const retryButton = screen.getByRole('button', { name: 'Retry' });
     expect(retryButton).toBeInTheDocument();
   });
+
+  describe('open/close behavior', () => {
+    it('calls onClose when close button is clicked', () => {
+      const onClose = vi.fn();
+      render(
+        <BetModal isOpen={true} onClose={onClose} predictionData={defaultPrediction} />
+      );
+
+      const closeButton = screen.getByLabelText('Close');
+      fireEvent.click(closeButton);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onClose when backdrop is clicked', () => {
+      const onClose = vi.fn();
+      const { container } = render(
+        <BetModal isOpen={true} onClose={onClose} predictionData={defaultPrediction} />
+      );
+
+      const backdrop = container.querySelector('.bg-black\\/60');
+      if (backdrop) {
+        fireEvent.click(backdrop);
+        expect(onClose).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    it('does not render when predictionData is null', () => {
+      const { container } = render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={null} />
+      );
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('resets state when modal is reopened', () => {
+      const { rerender } = render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      // Close modal
+      rerender(
+        <BetModal isOpen={false} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      // Reopen modal
+      rerender(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      // Should show confirm step again
+      expect(screen.getByText('Confirm Prediction')).toBeInTheDocument();
+    });
+  });
+
+  describe('amount validation', () => {
+    it('displays zero stake correctly', () => {
+      const prediction = { ...defaultPrediction, stake: '0' };
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={prediction} />
+      );
+      expect(screen.getByText('0 XLM')).toBeInTheDocument();
+    });
+
+    it('displays large stake amounts correctly', () => {
+      const prediction = { ...defaultPrediction, stake: '1000000' };
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={prediction} />
+      );
+      expect(screen.getByText('1000000 XLM')).toBeInTheDocument();
+    });
+
+    it('displays decimal stake amounts correctly', () => {
+      const prediction = { ...defaultPrediction, stake: '10.5' };
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={prediction} />
+      );
+      expect(screen.getByText('10.5 XLM')).toBeInTheDocument();
+    });
+  });
+
+  describe('direction toggle', () => {
+    it('displays UP direction with green color', () => {
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      const directionElement = screen.getByText('UP');
+      expect(directionElement).toBeInTheDocument();
+      expect(directionElement).toHaveClass('text-green-400');
+    });
+
+    it('displays DOWN direction with red color', () => {
+      const prediction = { ...defaultPrediction, direction: 'DOWN' as const };
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={prediction} />
+      );
+
+      const directionElement = screen.getByText('DOWN');
+      expect(directionElement).toBeInTheDocument();
+      expect(directionElement).toHaveClass('text-red-400');
+    });
+
+    it('updates direction when predictionData changes', () => {
+      const { rerender } = render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={{ ...defaultPrediction, direction: 'UP' as const }} />
+      );
+
+      expect(screen.getByText('UP')).toBeInTheDocument();
+      expect(screen.queryByText('DOWN')).not.toBeInTheDocument();
+
+      rerender(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={{ ...defaultPrediction, direction: 'DOWN' as const }} />
+      );
+
+      expect(screen.getByText('DOWN')).toBeInTheDocument();
+      expect(screen.queryByText('UP')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('disabled submit states', () => {
+    it('shows wallet_required step when wallet is not connected', () => {
+      useWalletStore.setState({
+        status: 'idle',
+        publicKey: null,
+      });
+
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      expect(screen.getByText('Wallet & Auth Required')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Connect & Authenticate' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument();
+    });
+
+    it('shows wallet_required step when not authenticated', () => {
+      useAuthStore.setState({
+        isAuthenticated: false,
+      });
+
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      expect(screen.getByText('Wallet & Auth Required')).toBeInTheDocument();
+    });
+
+    it('shows confirm step when wallet is connected and authenticated', () => {
+      useWalletStore.setState({
+        status: 'connected',
+        publicKey: 'GUSER123',
+      });
+      useAuthStore.setState({
+        isAuthenticated: true,
+      });
+
+      render(
+        <BetModal isOpen={true} onClose={vi.fn()} predictionData={defaultPrediction} />
+      );
+
+      expect(screen.getByText('Confirm Prediction')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument();
+    });
+  });
 });
