@@ -19,6 +19,7 @@ vi.mock('../components/PriceChart', () => ({
 vi.mock('../lib/api-client', () => ({
   predictionsApi: {
     submit: vi.fn(),
+    getUserHistory: vi.fn().mockResolvedValue([]),
   },
 }));
 
