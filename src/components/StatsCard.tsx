@@ -9,9 +9,12 @@ import { toast } from 'sonner';
 
 interface StatsCardProps {
   stats: MockUserStats;
+  isLoading?: boolean;
+  error?: string;
+  onRetry?: () => void;
 }
 
-export default function StatsCard({ stats }: StatsCardProps) {
+export default function StatsCard({ stats, isLoading, error, onRetry }: StatsCardProps) {
   const isWalletConnected = useWalletStore(selectIsWalletConnected);
   const publicKey = useWalletStore((s) => s.publicKey);
   const checkConnection = useWalletStore((s) => s.checkConnection);
@@ -42,6 +45,33 @@ export default function StatsCard({ stats }: StatsCardProps) {
       setIsClaiming(false);
     }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <section className="glass-card rounded-2xl p-5" aria-labelledby="your-stats-title">
+        <p className="text-white">Loading...</p>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="glass-card rounded-2xl p-5" aria-labelledby="your-stats-title">
+        <p className="text-red-500 mb-2">{error}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 w-full rounded-xl border py-2 text-sm font-semibold text-red-200 bg-red-500/20 border-red-400/50 hover:bg-red-500/30"
+          >
+            Retry
+          </button>
+        )}
+      </section>
+    );
+  }
 
   return (
     <section className="glass-card rounded-2xl p-5" aria-labelledby="your-stats-title">
