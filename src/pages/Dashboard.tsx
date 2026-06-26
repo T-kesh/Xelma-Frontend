@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import PriceChart from "../components/PriceChart";
 import PredictionCard from "../components/PredictionCard";
+import PredictionHistory from "../components/PredictionHistory";
 import type { PredictionData } from "../components/PredictionControls";
 import BetModal from "../components/BetModal";
 import EndRoundModal from "../components/EndRoundModal";
@@ -18,6 +19,7 @@ const Dashboard = () => {
   );
   const resolvedRound = useRoundStore((state) => state.resolvedRound);
   const dismissResolvedRound = useRoundStore((state) => state.dismissResolvedRound);
+  const publicKey = useWalletStore((s) => s.publicKey);
   const [isBetModalOpen, setIsBetModalOpen] = useState(false);
   const [pendingPrediction, setPendingPrediction] = useState<PredictionData | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -105,6 +107,7 @@ const Dashboard = () => {
             <div className="min-h-[350px] bg-white dark:bg-gray-800 p-6 shadow-sm rounded-xl border border-gray-100 dark:border-gray-700">
               <PriceChart height={280} />
             </div>
+            <PredictionHistory userId={publicKey} />
           </div>
         </div>
       </div>
