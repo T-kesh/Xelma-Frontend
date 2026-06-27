@@ -36,8 +36,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current);
+      const currentTimeout = timeoutRef.current;
+      if (currentTimeout !== null) {
+        clearTimeout(currentTimeout);
       }
     };
   }, []);
