@@ -19,6 +19,7 @@ vi.mock('../components/PriceChart', () => ({
 vi.mock('../lib/api-client', () => ({
   predictionsApi: {
     submit: vi.fn(),
+    getUserHistory: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -70,6 +71,25 @@ describe('Dashboard Terminal & Round Flows', () => {
 
       expect(screen.queryByText(/connect your wallet to submit predictions/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/connect your wallet to make predictions/i)).not.toBeInTheDocument();
+    });
+
+    // Issue #175 — wallet banner must include a 44px touch target
+    it('Connect now link enforces a minimum 44px touch target and stacks on mobile', () => {
+      useWalletStore.setState({ status: 'idle', publicKey: null });
+
+      render(
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      );
+
+      const link = screen.getByTestId('dashboard-connect-now');
+      expect(link.className).toMatch(/inline-flex/);
+      expect(link.className).toMatch(/min-h-\[44px\]/);
+      // Banner container should stack vertically on small viewports and become a row on >=640px.
+      const wrapper = link.parentElement;
+      expect(wrapper?.className ?? '').toMatch(/flex-col/);
+      expect(wrapper?.className ?? '').toMatch(/sm:flex-row/);
     });
   });
 
@@ -167,7 +187,7 @@ describe('Dashboard Terminal & Round Flows', () => {
 
       // Verify round details and pool statistics
       expect(screen.getByText(/reference \$67,420/i)).toBeInTheDocument();
-      expect(screen.getByText(/pool: 4,200 vxlm/i)).toBeInTheDocument();
+      expect(screen.getByText(/pool: 4\.20k vxlm/i)).toBeInTheDocument();
 
       // Submit prediction interaction from round card
       const submitButtons = screen.getAllByRole('button', { name: /submit prediction/i });
@@ -175,6 +195,45 @@ describe('Dashboard Terminal & Round Flows', () => {
 
       expect(onSelectRoundMock).toHaveBeenCalledTimes(1);
       expect(onSelectRoundMock).toHaveBeenCalledWith(mockRounds[0]);
+    });
+  });
+
+  describe('Empty state when no active rounds exist', () => {
+    it('renders empty state when round list is empty (no active rounds)', () => {
+      useRoundStore.setState({
+        isRoundActive: false,
+        fetchActiveRound: vi.fn().mockResolvedValue(undefined),
+      });
+
+      render(
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      );
+
+      expect(screen.getByText('No Active Rounds')).toBeInTheDocument();
+      expect(screen.getByText(/learn how the game works or refresh to check for new rounds/i)).toBeInTheDocument();
+    });
+
+    it('triggers refresh action on clicking refresh button', async () => {
+      const fetchActiveRoundMock = vi.fn().mockResolvedValue(undefined);
+      useRoundStore.setState({
+        isRoundActive: false,
+        fetchActiveRound: fetchActiveRoundMock,
+      });
+
+      render(
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      );
+
+      fetchActiveRoundMock.mockClear();
+
+      const refreshBtn = screen.getByRole('button', { name: /refresh/i });
+      fireEvent.click(refreshBtn);
+
+      expect(fetchActiveRoundMock).toHaveBeenCalledTimes(1);
     });
   });
 });
