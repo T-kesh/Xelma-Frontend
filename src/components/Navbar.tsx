@@ -28,6 +28,24 @@ function truncateAddress(key: string): string {
   return `${key.slice(0, 4)}...${key.slice(-4)}`;
 }
 
+const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? 'TESTNET').toUpperCase();
+
+function NetworkBadge() {
+  const isMainnet = NETWORK === 'PUBLIC' || NETWORK === 'MAINNET';
+  return (
+    <span
+      className={`rounded-full border px-2.5 py-0.5 text-xs font-bold tracking-wide ${
+        isMainnet
+          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+          : 'border-amber-500/40 bg-amber-500/10 text-amber-400'
+      }`}
+      aria-label={`Stellar network: ${NETWORK}`}
+    >
+      {isMainnet ? 'Mainnet' : 'Testnet'}
+    </span>
+  );
+}
+
 export default function Navbar() {
   const location = useLocation();
   const isConnected = useWalletStore(selectIsWalletConnected);
@@ -128,6 +146,7 @@ export default function Navbar() {
           {/* Desktop Wallet & Mobile Menu Toggle */}
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-3 md:flex">
+              <NetworkBadge />
               {isConnected && publicKey ? (
                 <>
                   <span className="rounded-lg border border-cyan-500/25 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200">
@@ -191,6 +210,10 @@ export default function Navbar() {
               >
                 <X className="h-6 w-6" />
               </button>
+            </div>
+
+            <div className="mb-4">
+              <NetworkBadge />
             </div>
 
             <nav className="flex flex-col gap-4">
